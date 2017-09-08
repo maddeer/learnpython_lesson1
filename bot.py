@@ -1,10 +1,12 @@
 #!/usr/bin/python3 
-#u={'update_id': 837881545, 'message': {'new_chat_photo': [], 'entities': [{'length': 7, 'offset': 0, 'type': 'bot_command'}], 'channel_chat_created': False, 'chat': {'last_name': 'Deer', 'id': 431329364, 'first_name': 'Mad', 'type': 'private'}, 'new_chat_members': [], 'from': {'is_bot': False, 'last_name': 'Deer', 'id': 431329364, 'language_code': 'ru-RU', 'first_name': 'Mad'}, 'new_chat_member': None, 'photo': [], 'group_chat_created': False, 'date': 1504779124, 'message_id': 60, 'supergroup_chat_created': False, 'text': '/planet mars', 'delete_chat_photo': False}}
+u={'update_id': 837881545, 'message': {'new_chat_photo': [], 'entities': [{'length': 7, 'offset': 0, 'type': 'bot_command'}], 'channel_chat_created': False, 'chat': {'last_name': 'Deer', 'id': 431329364, 'first_name': 'Mad', 'type': 'private'}, 'new_chat_members': [], 'from': {'is_bot': False, 'last_name': 'Deer', 'id': 431329364, 'language_code': 'ru-RU', 'first_name': 'Mad'}, 'new_chat_member': None, 'photo': [], 'group_chat_created': False, 'date': 1504779124, 'message_id': 60, 'supergroup_chat_created': False, 'text': '/planet mars', 'delete_chat_photo': False}}
 
-from telegram.ext import Updater, CommandHandler, MessageHandler,Filters 
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, RegexHandler
 import settings
 import ephem
 import datetime
+
+PLANET=0
 
 def greet_user(bot, update):
     text='Hello, {} {}'.format(update.message.chat.first_name,update.message.chat.last_name )
@@ -17,7 +19,7 @@ def talk_to_me(bot,update):
     print(usertext)
     update.message.reply_text(usertext)
 
-def getplanet(bot,update,args):
+def getconstellation(bot,update,planets):
     todaydate=datetime.date.today().isoformat() 
     solar={
             'Mercury': ephem.Mercury(todaydate),
@@ -30,11 +32,9 @@ def getplanet(bot,update,args):
             'Pluto':   ephem.Pluto(todaydate)
             }
     #planets=update.message.text.split()
-    planets=args
     if len(planets)>0 :
         hello_text='Hello, {} {}.'.format(update.message.chat.first_name,update.message.chat.last_name)
         text=''
-        planet=planets[0]
         for planet in planets :
             planetC=planet.capitalize()
             if planetC in solar:
@@ -54,12 +54,37 @@ def getplanet(bot,update,args):
     #print(update)
     update.message.reply_text(text)
 
+def planet_conv(bot,update):
+    update.message.reply_text('Hi! Enter you planet')
+    return PLANET 
+
+def cancel(bot,update):
+    update.message.reply_text('Bye!')
+    return ConversationHandler.END
+
+def getplanet(bot,update,args): 
+    getplanets=args 
+    getconstellation(bot,update,getplanets)
+
+def getplanet2(bot,update):
+    getplanets=update.message.text.split() 
+    getconstellation(bot,update,getplanets)
+    update.message.reply_text('Enter any planet')
+    return PLANET 
 
 def main():
     updater=Updater(settings.TELEGRAM_BOT_KEY)
     dp=updater.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
     dp.add_handler(CommandHandler("planet", getplanet,pass_args=True))
+    dp.add_handler(ConversationHandler( 
+        entry_points=[CommandHandler('planet_conv', planet_conv)],
+        states={
+#                PLANET: [RegexHandler('^(Mercury|Venus|Mars|Jupiter|Saturn|Uranus|Neptune|Pluto)$',getplanet2)]
+                 PLANET: [MessageHandler(Filters.text,getplanet2)]
+            },
+        fallbacks=[CommandHandler('cancel', cancel)]
+        ))
     dp.add_handler(MessageHandler(Filters.text,talk_to_me))
     updater.start_polling()
     updater.idle()
