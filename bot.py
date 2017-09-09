@@ -1,17 +1,20 @@
 #!/usr/bin/python3 
 
 import datetime
+import logging
 
 import ephem
 
 import settings
 
+from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, RegexHandler
 
 
-PLANET=0
+PLANET = 0
+NUMBER, CALC = range(2)
 
-import logging
+
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
             level=logging.INFO,
             filename='bot.log'
@@ -99,18 +102,18 @@ def wordcount(bot,update):
     
 
 def calculator(bot, update, args):
-    getmath = ' '.join(args).strip('=')
+    getmath = ''.join(args).strip('=')
     try:
-        if len(getmath.split('-'))>1: 
+        if '-' in getmath: 
             math_list = getmath.split('-')
             result_math = float(math_list[0].strip()) - float(math_list[1].strip())
-        elif len(getmath.split('+'))>1:
+        elif '+' in getmath:
             math_list = getmath.split('+')
             result_math = float(math_list[0].strip()) + float(math_list[1].strip())
-        elif len(getmath.split('*'))>1:
+        elif '*' in getmath:
             math_list = getmath.split('*')
             result_math = float(math_list[0].strip()) * float(math_list[1].strip())
-        elif len(getmath.split('/'))>1:
+        elif '/' in getmath:
             math_list = getmath.split('/')
             if math_list[1].strip() != '0' :
                 result_math = float(math_list[0].strip()) / float(math_list[1].strip())
@@ -129,14 +132,23 @@ def calculator2(bot,update):
                         ['4', '5', '6', '/'],
                         ['7', '8', '9', ],
                         ['0', '+', '-', '=']]
-    reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
-    bot.send_message(chat_id=chat_id, text="Custom Keyboard Test", reply_markup=reply_markup)
-    pass 
+    reply_markup = ReplyKeyboardMarkup(custom_keyboard)
+    update.message.reply_text('Enter the leter', reply_markup=reply_markup)
+    return NUMBER
 
 
 def getbutton(bot,update):
-    pass 
-    
+    global NUMBERS_TEXT
+    if update.message.text == '=' : 
+        calculator(bot,update,NUMBERS_TEXT)
+        update.message.reply_text('BYE!',reply_markup=ReplyKeyboardRemove())
+        NUMBERS_TEXT=''
+        return ConversationHandler.END
+    else:
+        text_enterd = update.message.text
+        NUMBERS_TEXT+=text_enterd 
+        update.message.reply_text('You pressed {}. Enter another leter'.format(NUMBERS_TEXT))
+    return NUMBER 
 
 
 def main():
@@ -157,7 +169,7 @@ def main():
     dp.add_handler(ConversationHandler( 
         entry_points = [CommandHandler('calculator2', calculator2)],
         states={
-                 NUMBER: [MessageHandler(filters.text, getbutton)]
+                 NUMBER: [MessageHandler(Filters.text, getbutton)],
             },
         fallbacks = [CommandHandler('cancel', cancel)]
         ))
@@ -166,6 +178,6 @@ def main():
     updater.idle()
 
 
-
+NUMBERS_TEXT = '' 
 if __name__ == '__main__':
     main()
