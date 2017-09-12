@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import re
 
 import ephem
 
@@ -95,15 +96,15 @@ def getplanet2(bot, update):
 
 
 def wordcount(bot, update):
-    text = update.message.text.split('"')
+    text_list = re.findall('\"([^"]*)\"',update.message.text)
     words = 0
-    if len(text) > 1:
-        words = len(text[1].split())
+    for text_item in text_list:
+        words += len(text_item.split())
     update.message.reply_text('{} words'.format(words))
 
 
 def calculator(bot, update, args):
-    getmath = ''.join(args).strip('=')
+    getmath = ''.join(args).replace(' ','').strip('=')
     try:
         if '-' in getmath:
             math_list = getmath.split('-')
@@ -153,6 +154,31 @@ def getbutton(bot, update):
     return NUMBER
 
 
+def textcalculator(bot, update, args):
+    regex_dict = {
+                'сколько будет': '=',
+                'один': '1',
+                'два': '2',
+                'три' : '3',
+                'четыре': '4',
+                'пять': '5',
+                'шесть': '6',
+                'семь': '7',
+                'восемь': '8',
+                'девять': '9',
+                'ноль': '0',
+                'плюс': '+',
+                'минус': '-',
+                'умножить на': '*',
+                'разделить на': '/',
+                }
+    getformula = ' '.join(args).lower()
+    for regex in regex_dict:
+        getformula = getformula.replace(regex,regex_dict[regex])
+
+    calculator(bot, update, getformula)
+
+
 def main():
     updater = Updater(settings.TELEGRAM_BOT_KEY)
     dp = updater.dispatcher
@@ -160,6 +186,7 @@ def main():
     dp.add_handler(CommandHandler("planet", getplanet, pass_args=True))
     dp.add_handler(CommandHandler("wordcount", wordcount))
     dp.add_handler(CommandHandler("calculator", calculator, pass_args=True))
+    dp.add_handler(CommandHandler("textcalculator", textcalculator, pass_args=True))
     dp.add_handler(ConversationHandler(
         entry_points=[CommandHandler('planet_conv', planet_conv)],
         states={
