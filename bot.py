@@ -15,6 +15,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Conve
 PLANET = 0
 NUMBER, CALC = range(2)
 
+CITY = []
 
 NUMBERS_TEXT = ''
 
@@ -178,8 +179,58 @@ def textcalculator(bot, update, args):
 
     calculator(bot, update, getformula)
 
+def getfullmoon(bot, update, args):
+    get_question=' '.join(args).lower()
+    if 'когда ближайшее полнолуние после' in get_question: 
+        full_moon_predate=re.findall('([0-9]{4}-[0-9]{2}-[0-9]{2})',get_question)
+        if full_moon_predate: 
+            for full_moon_date in full_moon_predate: 
+                full_moon_date.replace('-','/')
+                update.message.reply_text('Полнолуне начнется {}'.format(ephem.next_full_moon(full_moon_date)))
+        else:
+            update.message.reply_text('задайте вопрос в фотмате:\n'
+                '/getfullmoon когда ближайшее полнолуние после ГГГГ-ММ-ДД') 
+    else: 
+        update.message.reply_text('задайте вопрос в фотмате:\n'
+            '/getfullmoon когда ближайшее полнолуние после ГГГГ-ММ-ДД') 
+
+
+def goroda(bot, update, args):
+    if not args: 
+        update.message.reply_text('Укажите город')
+        return 
+
+    gorod = args[0]
+    if not args[0].capitalize() in CITY:
+        update.message.reply_text('Такой город уже был или его нет')
+        return
+
+    find = False
+    for city in CITY:
+        if gorod[-1].lower() == 'ъ' or gorod[-1].lower() == 'ь': 
+            last = gorod[-2].lower()
+        else: 
+            last = gorod[-1].lower()  
+        
+        if city[0].lower() == last:
+            update.message.reply_text(city)
+            CITY.remove(city)
+            CITY.remove(gorod.capitalize())
+            find = True
+            break 
+    if not find: 
+        update.message.reply_text('У меня кончились города. Начинаю сначала')
+        get_city_list()
+
+
+def get_city_list():
+    with open('cities.txt', 'r', encoding='utf-8') as f: 
+        for line in f:
+            CITY.append(line.replace('\n','').capitalize())
+
 
 def main():
+    get_city_list()
     updater = Updater(settings.TELEGRAM_BOT_KEY)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
@@ -187,6 +238,8 @@ def main():
     dp.add_handler(CommandHandler("wordcount", wordcount))
     dp.add_handler(CommandHandler("calculator", calculator, pass_args=True))
     dp.add_handler(CommandHandler("textcalculator", textcalculator, pass_args=True))
+    dp.add_handler(CommandHandler("getfullmoon", getfullmoon, pass_args=True))
+    dp.add_handler(CommandHandler("goroda", goroda, pass_args=True))
     dp.add_handler(ConversationHandler(
         entry_points=[CommandHandler('planet_conv', planet_conv)],
         states={
@@ -204,6 +257,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
     updater.start_polling()
     updater.idle()
+
 
 
 if __name__ == '__main__':
