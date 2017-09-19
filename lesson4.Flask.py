@@ -37,26 +37,30 @@ def all_the_news():
 @app.route('/names')
 def all_names():
     all_names_data = get_names()
+
     current_year = int(datetime.now().strftime('%Y'))
     links = ''
     for link in range(2015,current_year+1):
         links += '<a href="?year={year}">{year}</a> '.format(year=link)
+
     table_full = '''<table>
     <tr>
         <th>Номер</th>
         <th>Имя</th>
         <th>Год</th>
         <th>Месяц</th>
-        <th>Колличество</th>
+        <th >Колличество</th>
     </tr>{}
     </table>'''
+
     data_string = '''<tr>
     <td>{0}</td>
     <td>{Name}</td>
     <td>{Year}</td>
-    <td>{Month}</td>
-    <td>{NumberOfPersons}</td>
+    <td style='width: 80; text-align: center; '>{Month}</td>
+    <td style='text-align: center;'>{NumberOfPersons}</td>
     </tr>'''
+
     result = ''
     try:
         year = int(request.args.get('year', '2017'))
@@ -65,9 +69,10 @@ def all_names():
 
     for string in all_names_data: 
         if string['Cells']['Year'] == year: 
-            result += data_string.format(string['Number'],**string['Cells'])
+            result += data_string.format(string['Number'], **string['Cells'])
+
     result = table_full.format(result)
-    return links + result
+    return links + '<br>' + result
 
 
 @app.route('/news/<int:news_id>')
