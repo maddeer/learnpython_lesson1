@@ -39,20 +39,23 @@ def main():
     metro_stats=[]
     
     for metro_station in metro:
-        metro_geo_longt = round(metro_station['geoData']['coordinates'][0],3)
-        metro_geo_latit = round(metro_station['geoData']['coordinates'][1],3)
+        metro_geo_longt = round(float(metro_station['geoData']['coordinates'][0]),3)
+        metro_geo_latit = round(float(metro_station['geoData']['coordinates'][1]),3)
 
         for bus_station in bus_stations:
-            bus_longt = round(bus_station['Longitude_WGS84'],3)
-            bus_latit = round(bus_station['Latitude_WGS84'],3)
+            try:
+                bus_longt = round(float(bus_station['Longitude_WGS84']),3)
+                bus_latit = round(float(bus_station['Latitude_WGS84']),3)
 
-            if bus_longt == metro_geo_longt and bus_latit == metro_geo_latit:
-                metro_stats.append(metro_station['NameOfStation'])
+                if bus_longt == metro_geo_longt and bus_latit == metro_geo_latit:
+                    metro_stats.append(metro_station['NameOfStation'])
+            except ValueError:
+                pass
 
     counter = Counter(metro_stats)
     maxstation = counter.most_common()[0][0]
     maxcount_street = counter.most_common()[0][1]
-    print('Максимальное колличество остановок: {} \nНаходятся на станции "{}"'.format(maxcount_street, maxstreet))
+    print('Максимальное колличество остановок: {} \nНаходятся на станции "{}"'.format(maxcount_street, maxstation))
 
 
 if __name__ == '__main__':
