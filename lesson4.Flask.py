@@ -46,11 +46,17 @@ def all_names():
 
     table_full = '''<table>
     <tr>
-        <th>Номер <a style='text-decoration: none; font-size:large;color: black;' href='?sortby=nomber&year={0}'>&#9660;</a></th>
-        <th>Имя <a style='text-decoration: none; font-size:large;color: black;' href='?sortby=name&year={0}'>&#9660;</a></th>
+        <th>Номер <a style='text-decoration: none; color: black;' href='?sortby=nomber&year={0}'>&#9660;</a>
+        <a style='text-decoration: none; color: black;' href='?sortby=nomber&year={0}&reverse=true'>&#9650;</a>
+        </th>
+        <th>Имя <a style='text-decoration: none; color: black;' href='?sortby=name&year={0}'>&#9660;</a>
+        <a style='text-decoration: none; color: black;' href='?sortby=name&year={0}&reverse=true'>&#9650;</a>
+        </th>
         <th>Год</th>
         <th>Месяц</th>
-        <th>Колличество <a style='text-decoration: none; font-size:large;color: black;' href='?sortby=count&year={0}'>&#9660;</a></th>
+        <th>Колличество <a style='text-decoration: none; color: black;' href='?sortby=count&year={0}'>&#9660;</a>
+        <a style='text-decoration: none; color: black;' href='?sortby=count&year={0}&reverse=true'>&#9650;</a>
+        </th>
     </tr>{1}
     </table>'''
 
@@ -69,18 +75,19 @@ def all_names():
         year = 2017
     
     sortby = request.args.get('sortby', 'nomber') if request.args.get('sortby') in sortby_variants else 'nomber'
+    sort_reverse = request.args.get('reverse', 'false') if request.args.get('reverse') in ('true', 'false') else 'false'
+    sort_reverse = True if sort_reverse == 'true' else False
+
     
     for string in range(len(all_names_data)): 
-        all_names_data[string]['Cells']['Name'] = all_names_data[string]['Cells']['Name'].strip()
-        
+       all_names_data[string]['Cells']['Name'] = all_names_data[string]['Cells']['Name'].strip()
+
+    cels = {'name': 'Name', 'month': 'Month', 'count': 'NumberOfPersons' } 
+
     if sortby == 'nomber':
-        all_names_data.sort(key=lambda k: k['Number'])
-    elif sortby == 'name':
-        all_names_data.sort(key=lambda k: k['Cells']['Name'])
-    elif sortby == 'month':
-        all_names_data.sort(key=lambda k: k['Cells']['Month'])
-    elif sortby == 'count':
-        all_names_data.sort(key=lambda k: k['Cells']['NumberOfPersons'])
+        all_names_data.sort(key=lambda k: k['Number'], reverse=sort_reverse)
+    else:
+        all_names_data.sort(key=lambda k: k['Cells'][cels[sortby]], reverse=sort_reverse)
 
     for string in all_names_data: 
         if string['Cells']['Year'] == year: 
