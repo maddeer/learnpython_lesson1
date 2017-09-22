@@ -2,6 +2,7 @@
 
 import json
 import csv 
+import math
 
 from collections import Counter
 
@@ -39,15 +40,19 @@ def main():
     metro_stats=[]
     
     for metro_station in metro:
-        metro_geo_longt = round(float(metro_station['geoData']['coordinates'][0]),3)
-        metro_geo_latit = round(float(metro_station['geoData']['coordinates'][1]),3)
+        #metro_geo_longt = round(float(metro_station['geoData']['coordinates'][0]),3)
+        #metro_geo_latit = round(float(metro_station['geoData']['coordinates'][1]),3)
+        metro_geo_longt = float(metro_station['geoData']['coordinates'][0])
+        metro_geo_latit = float(metro_station['geoData']['coordinates'][1])
 
         for bus_station in bus_stations:
             try:
-                bus_longt = round(float(bus_station['Longitude_WGS84']),3)
-                bus_latit = round(float(bus_station['Latitude_WGS84']),3)
+                #bus_longt = round(float(bus_station['Longitude_WGS84']),3)
+                bus_longt = float(bus_station['Longitude_WGS84'])
+                #bus_latit = round(float(bus_station['Latitude_WGS84']),3)
+                bus_latit = float(bus_station['Latitude_WGS84'])
 
-                if bus_longt == metro_geo_longt and bus_latit == metro_geo_latit:
+                if math.sqrt((metro_geo_longt - bus_longt)**2 + (metro_geo_latit - bus_latit)**2) < 0.0005:
                     metro_stats.append(metro_station['NameOfStation'])
             except ValueError:
                 pass

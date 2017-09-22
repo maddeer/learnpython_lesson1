@@ -37,6 +37,7 @@ def all_the_news():
 @app.route('/names')
 def all_names():
     all_names_data = get_names()
+    sortby_variants = [ 'nomber', 'name', 'month', 'count' ]
 
     current_year = int(datetime.now().strftime('%Y'))
     links = ''
@@ -45,12 +46,12 @@ def all_names():
 
     table_full = '''<table>
     <tr>
-        <th>Номер</th>
-        <th>Имя</th>
+        <th>Номер <a style='text-decoration: none; font-size:large;color: black;' href='?sortby=nomber&year={0}'>&#9660;</a></th>
+        <th>Имя <a style='text-decoration: none; font-size:large;color: black;' href='?sortby=name&year={0}'>&#9660;</a></th>
         <th>Год</th>
         <th>Месяц</th>
-        <th >Колличество</th>
-    </tr>{}
+        <th>Колличество <a style='text-decoration: none; font-size:large;color: black;' href='?sortby=count&year={0}'>&#9660;</a></th>
+    </tr>{1}
     </table>'''
 
     data_string = '''<tr>
@@ -66,12 +67,26 @@ def all_names():
         year = int(request.args.get('year', '2017'))
     except ValueError: 
         year = 2017
+    
+    sortby = request.args.get('sortby', 'nomber') if request.args.get('sortby') in sortby_variants else 'nomber'
+    
+    for string in all_names_data: 
+        string['Cells']['Name'].strip
+        
+    if sortby == 'nomber':
+        all_names_data.sort(key=lambda k: k['Number'])
+    elif sortby == 'name':
+        all_names_data.sort(key=lambda k: k['Cells']['Name'])
+    elif sortby == 'month':
+        all_names_data.sort(key=lambda k: k['Cells']['Month'])
+    elif sortby == 'count':
+        all_names_data.sort(key=lambda k: k['Cells']['NumberOfPersons'])
 
     for string in all_names_data: 
         if string['Cells']['Year'] == year: 
             result += data_string.format(string['Number'], **string['Cells'])
 
-    result = table_full.format(result)
+    result = table_full.format(year,result)
     return links + '<br>' + result
 
 
