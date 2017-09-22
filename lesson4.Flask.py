@@ -70,8 +70,8 @@ def all_names():
     
     sortby = request.args.get('sortby', 'nomber') if request.args.get('sortby') in sortby_variants else 'nomber'
     
-    for string in all_names_data: 
-        string['Cells']['Name'].strip
+    for string in range(len(all_names_data)): 
+        all_names_data[string]['Cells']['Name'] = all_names_data[string]['Cells']['Name'].strip()
         
     if sortby == 'nomber':
         all_names_data.sort(key=lambda k: k['Number'])
