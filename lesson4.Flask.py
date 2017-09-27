@@ -37,7 +37,7 @@ def all_the_news():
 @app.route('/names')
 def all_names():
     all_names_data = get_names()
-    sortby_variants = [ 'nomber', 'name', 'month', 'count' ]
+    sortby_variants = [ 'number', 'name', 'month', 'count' ]
 
     current_year = int(datetime.now().strftime('%Y'))
     links = ''
@@ -46,8 +46,8 @@ def all_names():
 
     table_full = '''<table>
     <tr>
-        <th>Номер <a style='text-decoration: none; color: black;' href='?sortby=nomber&year={0}'>&#9660;</a>
-        <a style='text-decoration: none; color: black;' href='?sortby=nomber&year={0}&reverse=true'>&#9650;</a>
+        <th>Номер <a style='text-decoration: none; color: black;' href='?sortby=number&year={0}'>&#9660;</a>
+        <a style='text-decoration: none; color: black;' href='?sortby=number&year={0}&reverse=true'>&#9650;</a>
         </th>
         <th>Имя <a style='text-decoration: none; color: black;' href='?sortby=name&year={0}'>&#9660;</a>
         <a style='text-decoration: none; color: black;' href='?sortby=name&year={0}&reverse=true'>&#9650;</a>
@@ -74,7 +74,7 @@ def all_names():
     except ValueError: 
         year = 2017
     
-    sortby = request.args.get('sortby', 'nomber') if request.args.get('sortby') in sortby_variants else 'nomber'
+    sortby = request.args.get('sortby', 'number') if request.args.get('sortby') in sortby_variants else 'number'
     sort_reverse = request.args.get('reverse', 'false') if request.args.get('reverse') in ('true', 'false') else 'false'
     sort_reverse = True if sort_reverse == 'true' else False
 
@@ -84,7 +84,7 @@ def all_names():
 
     cels = {'name': 'Name', 'month': 'Month', 'count': 'NumberOfPersons' } 
 
-    if sortby == 'nomber':
+    if sortby == 'number':
         all_names_data.sort(key=lambda k: k['Number'], reverse=sort_reverse)
     else:
         all_names_data.sort(key=lambda k: k['Cells'][cels[sortby]], reverse=sort_reverse)
