@@ -5,7 +5,7 @@ def get_answers(question):
     answer="""Q:{} 
 A:{}""".format(question,answers.get(str(question).lower(),'No Answer'))
     return answer
-
+print(__name__)
 if __name__ == '__main__':
     print(get_answers('привет'))
     print(get_answers('как дела'))
